@@ -13,12 +13,12 @@ print("Initializing System...")
 for module in modules:
     if "Dataset" in module:
         print(f"Loading {module}", end="")
-        sys.stdout.flush() # pyright: ignore [reportUnusedCallResult] 
+        sys.stdout.flush()
         time.sleep(1)
         print(" [ERROR]")
     else:
         print(f"Loading {module}...", end="")
-        _ = sys.stdout.flush() 
+        sys.stdout.flush() 
         time.sleep(1)
         print(" [OK]")
 
