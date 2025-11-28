@@ -14,22 +14,26 @@ def main():
         print("No prompt was supplied, please add a prompt and rerun the program")
         sys.exit(1)
     else:
-        content = sys.argv[1]
+        verbose_mode = "--verbose" in sys.argv
+        raw_args = sys.argv[1:]
+        if verbose_mode:
+            raw_args.remove("--verbose")
+        content = " ".join(raw_args) 
         messages = [types.Content(role="user", parts=[types.Part(text=content)]),]
-        print_response(messages)
+        print_response(messages, verbose_mode, content)
 
-def parse_args():
-    
 
-def print_response(content):
+def print_response(content, verbose, prompt):
     response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content)
     print(response.text)
-    if response.usage_metadata:
-        prompt_token_count = response.usage_metadata.prompt_token_count
-        candidates_token_count = response.usage_metadata.candidates_token_count
+    if verbose:
+        if response.usage_metadata:
+            prompt_token_count = response.usage_metadata.prompt_token_count
+            candidates_token_count = response.usage_metadata.candidates_token_count
 
-        print(f"Prompt tokens: {prompt_token_count}")
-        print(f"Response tokens: {candidates_token_count}")
+            print(f"User prompt: {prompt}")
+            print(f"Prompt tokens: {prompt_token_count}")
+            print(f"Response tokens: {candidates_token_count}")
 
 if __name__ == "__main__":
     main()
