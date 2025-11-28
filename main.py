@@ -18,6 +18,9 @@ def main():
         messages = [types.Content(role="user", parts=[types.Part(text=content)]),]
         print_response(messages)
 
+def parse_args():
+    
+
 def print_response(content):
     response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content)
     print(response.text)
