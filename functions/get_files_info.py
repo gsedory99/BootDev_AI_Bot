@@ -11,14 +11,14 @@ def get_files_info(working_directory, directory="."):
         return f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
 
     dir_contents = os.listdir(absolute_path)
-    contents_info = ""
+    contents_info = []
 
     for content in dir_contents:
         content_path = os.path.join(absolute_path, content)
         size= os.path.getsize(content_path)
         if os.path.isdir(content_path):
-            contents_info += f"- {content}: file_size={size} bytes, is_dir=True\n"
+            contents_info.append(f"- {content}: file_size={size} bytes, is_dir=True\n")  
         else:
-            contents_info += f"- {content}: file_size={size} bytes, is_dir=False\n"            
-    return contents_info
+            contents_info.append(f"- {content}: file_size={size} bytes, is_dir=False\n")            
+    return "".join(contents_info)
 
