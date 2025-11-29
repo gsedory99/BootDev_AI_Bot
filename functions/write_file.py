@@ -8,12 +8,9 @@ def write_file(working_directory, file_path, content):
     if not absolute_file_path.startswith(absolute_working_dir):
         return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
 
-    if os.path.exists(absolute_file_path):
-        with open(raw_path, "w") as f:
-            f.write(content)
-    else:
-        os.makedirs(file_path)
-        with open(raw_path, "w") as f:
-            f.write(content)
+    file_directory = os.path.dirname(raw_path)
+    os.makedirs(file_directory, exist_ok=True)
+    with open(raw_path, "w") as f:
+        f.write(content)
 
     return f'Successfully write to "{file_path}" ({len(content)} characters written)'
