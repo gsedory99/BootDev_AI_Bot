@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import config
+from functions.call_function import call_function
 from functions.get_files_info import schema_get_files_info
 from functions.write_file import schema_write_file
 from functions.get_file_content import schema_get_file_content
@@ -41,8 +42,19 @@ def print_response(content, verbose, prompt):
     gen_config = types.GenerateContentConfig(tools=[available_functions], system_instruction=config.SYSTEM_PROMPT)
     response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content, config=gen_config)
     if response.function_calls != None:
+        function_call_responses = []
         for function in response.function_calls:
-            print(f"Calling function: {function.name}({function.args})")
+            function_call_results = call_function(function, verbose)
+            if ( not function_call_results.parts
+                or not function_call_results.parts[0].function_response
+                or not function_call_results.parts[0].function_response.response
+                ):
+                raise Exception("fatal error")
+            function_call_responses.append(function_call_results.parts[0])
+            if verbose:
+                print(f"-> {function_call_results.parts[0].function_response.response}")
+        # print(function_call_responses)  
+
     else:
         print(response.text)
     if verbose:
