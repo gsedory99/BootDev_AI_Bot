@@ -30,7 +30,7 @@ schema_get_file_content = types.FunctionDeclaration(
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="path to the file, relative to the working directory",
+                description="path to the file, relative to the working directory, the working directroy is the calculator folder so make sure not to include that folder here",
             ),
         },
     ),
