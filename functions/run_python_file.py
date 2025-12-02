@@ -1,6 +1,5 @@
 import os
 import subprocess
-from typing import final
 
 def run_python_file(working_directory, file_path, args=[]):
     raw_path = os.path.join(working_directory, file_path)
@@ -15,8 +14,10 @@ def run_python_file(working_directory, file_path, args=[]):
         return f'Error: "{file_path}" is not a Python file.'
 
     try:
+        import sys
+        command = [sys.executable, absolute_file_path] + args
         result = subprocess.run(
-            args, 
+            command, 
             timeout=30,
             cwd=absolute_working_dir,
             capture_output=True,

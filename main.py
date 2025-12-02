@@ -3,6 +3,8 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+import config
+from functions.get_files_info import schema_get_files_info
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -23,9 +25,20 @@ def main():
         print_response(messages, verbose_mode, content)
 
 
+available_functions = types.Tool(
+    function_declarations=[
+        schema_get_files_info,
+    ]
+)
+
 def print_response(content, verbose, prompt):
-    response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content)
-    print(response.text)
+    gen_config = types.GenerateContentConfig(tools=[available_functions], system_instruction=config.SYSTEM_PROMPT)
+    response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content, config=gen_config)
+    if response.function_calls != None:
+        for function in response.function_calls:
+            print(f"Calling function: {function.name}({function.args})")
+    else:
+        print(response.text)
     if verbose:
         if response.usage_metadata:
             prompt_token_count = response.usage_metadata.prompt_token_count
