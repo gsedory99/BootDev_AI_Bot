@@ -1,5 +1,6 @@
 import os
 import config
+from google.genai import types
 
 def get_file_content(working_directory, file_path):
     raw_path = os.path.join(working_directory, file_path)
@@ -19,3 +20,18 @@ def get_file_content(working_directory, file_path):
 
 
     return file_content_string
+
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Gets the content of a file in the form of a string and returns the string",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "directory": types.Schema(
+                type=types.Type.STRING,
+                description="The directory to find the file in, relative to the working directory. If not provided, the file is in the working directory itself.",
+            ),
+        },
+    ),
+)
