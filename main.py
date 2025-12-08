@@ -38,33 +38,50 @@ available_functions = types.Tool(
     ]
 )
 
-def print_response(content, verbose, prompt):
+def print_response(messages, verbose, prompt):
     gen_config = types.GenerateContentConfig(tools=[available_functions], system_instruction=config.SYSTEM_PROMPT)
-    response = client.models.generate_content(model='gemini-2.0-flash-001', contents=content, config=gen_config)
-    if response.function_calls != None:
-        function_call_responses = []
-        for function in response.function_calls:
-            function_call_results = call_function(function, verbose)
-            if ( not function_call_results.parts
-                or not function_call_results.parts[0].function_response
-                or not function_call_results.parts[0].function_response.response
-                ):
-                raise Exception("fatal error")
-            function_call_responses.append(function_call_results.parts[0])
+    iteration = 0
+    while True:
+        if iteration >= 20:
+            break
+        
+        try:
+            response = client.models.generate_content(model='gemini-2.0-flash-001', contents=messages, config=gen_config)
+
+            if response.function_calls == None and response.text:
+                print(response.text)
+                break
+
+            #append the messages of each response candidate to the messages supplied
+            if response.candidates is not None:
+                for response_variation in response.candidates:
+                    messages.append(response_variation.content)
+            if response.function_calls != None:
+                function_call_responses = []
+                for function in response.function_calls:
+                    function_call_results = call_function(function, verbose)
+                    if ( not function_call_results.parts
+                        or not function_call_results.parts[0].function_response
+                        or not function_call_results.parts[0].function_response.response
+                        ):
+                        raise Exception("fatal error")
+                    function_call_responses.append(function_call_results.parts[0])
+                    if verbose:
+                        print(f"-> {function_call_results.parts[0].function_response.response}")
+                messages.append(types.Content(role="user", parts=function_call_responses))
+
             if verbose:
-                print(f"-> {function_call_results.parts[0].function_response.response}")
-        # print(function_call_responses)  
+                if response.usage_metadata:
+                    prompt_token_count = response.usage_metadata.prompt_token_count
+                    candidates_token_count = response.usage_metadata.candidates_token_count
 
-    else:
-        print(response.text)
-    if verbose:
-        if response.usage_metadata:
-            prompt_token_count = response.usage_metadata.prompt_token_count
-            candidates_token_count = response.usage_metadata.candidates_token_count
-
-            print(f"User prompt: {prompt}")
-            print(f"Prompt tokens: {prompt_token_count}")
-            print(f"Response tokens: {candidates_token_count}")
+                    print(f"User prompt: {prompt}")
+                    print(f"Prompt tokens: {prompt_token_count}")
+                    print(f"Response tokens: {candidates_token_count}")
+        except Exception as e:
+            print(f"Fatal Error, program has stopped: {e}")
+            break
+        iteration += 1
 
 if __name__ == "__main__":
     main()
